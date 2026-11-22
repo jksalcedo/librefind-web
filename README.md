@@ -1,57 +1,66 @@
-# LibreFind Submission Web
+# LibreFind Web
 
-LibreFind Submission Web is a web application designed to facilitate the submission of applications and links to free and open-source software (FOSS) alternatives. This project aims to promote digital sovereignty by providing users with tools to reclaim their digital freedom.
+LibreFind Web is the Astro frontend for discovering, submitting, and moderating free and open-source software alternatives.
 
 ## Features
 
-- User authentication for submitting applications.
-- Submission forms for FOSS alternatives, proprietary targets, and app linking.
-- Impact statistics display to show the health of the ecosystem.
-- Responsive design for optimal viewing on various devices.
+- Email/password, GitHub OAuth, anonymous, and password-reset authentication through Supabase
+- Submission forms for FOSS alternatives, proprietary targets, and app linking
+- Community moderation queue with search, filters, sorting, pagination, and voting
+- Submission detail dialog with repository links and source metadata
+- Impact statistics and community moderation tools
+- Responsive Tailwind CSS interface with a monochrome theme
 
-## Installation
+## Development
 
-To get started with the LibreFind Submission Web project, follow these steps:
+Requirements:
 
-1. Clone the repository:
-   ```
-   git clone https://github.com/jksalcedo/librefind-submission-web.git
-   ```
+- Node.js
+- npm
+- A Supabase project
 
-2. Navigate to the project directory:
-   ```
-   cd librefind-submission-web
-   ```
+Clone the repository:
 
-3. Install the dependencies:
-   ```
-   npm install
-   ```
+```sh
+git clone https://codeberg.org/jksalcedo/librefind-web.git
+cd librefind-web
+npm install
+```
 
-4. Start the development server:
-   ```
-   npm start
-   ```
+Configure Supabase environment variables:
 
-## Usage
+```env
+PUBLIC_SUPABASE_URL=your_supabase_url
+PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-- Open your web browser and navigate to `http://localhost:3000` to access the application.
-- Use the submission interface to authenticate and submit applications or links.
+Start the development server:
+
+```sh
+npm run dev
+```
+
+Astro typically serves the site at `http://localhost:4321`.
+
+## Scripts
+
+```sh
+npm run dev      # Start the Astro development server
+npm run build    # Create a production build
+npm run preview  # Preview the production build
+npm start        # Start the Astro development server
+```
+
+## Routes
+
+- `/` - LibreFind overview
+- `/submit` - Authenticate and submit alternatives or proprietary targets
+- `/community` - Browse and vote on pending community submissions
 
 ## Contributing
 
-Contributions are welcome! Please follow these steps to contribute:
-
-1. Fork the repository.
-2. Create a new branch for your feature or bug fix.
-3. Make your changes and commit them.
-4. Push your branch to your forked repository.
-5. Create a pull request.
+Contributions are welcome. Create a branch, make focused changes, run `npm run build`, and open a pull request on Codeberg.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
-
-## Acknowledgments
-
-- Thanks to the contributors and the open-source community for their support and resources.
+This project is licensed under the MIT License. See [LICENSE](LICENSE).
