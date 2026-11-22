@@ -1,0 +1,815 @@
+---
+---
+
+<div id="community-container" class="space-y-6">
+    <div class="max-w-2xl mx-auto">
+        <label for="search-input" class="sr-only">Search submissions</label>
+        <div class="relative">
+            <input
+                id="search-input"
+                type="search"
+                placeholder="Search by app name, package, or submitter..."
+                class="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 pl-10 text-white focus:border-blue-500 outline-none"
+            />
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" aria-hidden="true"></i>
+        </div>
+    </div>
+
+    <div class="flex flex-wrap gap-3 justify-between items-center">
+        <div id="filter-bar" class="flex flex-wrap gap-2" role="group" aria-label="Filter by type">
+            <button type="button" data-filter="all" aria-pressed="true">All</button>
+            <button type="button" data-filter="NEW_ALTERNATIVE" aria-pressed="false">New Alternative</button>
+            <button type="button" data-filter="NEW_PROPRIETARY" aria-pressed="false">New Proprietary</button>
+            <button type="button" data-filter="LINKING" aria-pressed="false">Linking</button>
+        </div>
+
+        <div>
+            <label for="sort-select" class="sr-only">Sort submissions</label>
+            <select
+                id="sort-select"
+                class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-300 outline-none focus:border-blue-500"
+            >
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+                <option value="most_upvoted">Most Upvoted</option>
+                <option value="most_downvoted">Most Downvoted</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="loading-spinner" class="text-center py-10" role="status">
+        <i class="fas fa-spinner fa-spin text-blue-500 text-3xl" aria-hidden="true"></i>
+        <span class="sr-only">Loading submissions</span>
+    </div>
+
+    <div id="error-state" class="hidden text-center py-16">
+        <i class="fas fa-triangle-exclamation text-red-500 text-4xl mb-4" aria-hidden="true"></i>
+        <p id="error-message" class="text-red-400"></p>
+        <button type="button" data-retry class="mt-4 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-sm border border-zinc-700">
+            Retry
+        </button>
+    </div>
+
+    <div id="empty-state" class="hidden text-center py-16">
+        <i class="fas fa-inbox text-zinc-600 text-5xl mb-4" aria-hidden="true"></i>
+        <p class="text-zinc-400 text-lg">No pending submissions</p>
+        <p class="text-zinc-500 text-sm mt-2">Try a different filter or search term.</p>
+    </div>
+
+    <div id="submission-list" class="hidden space-y-4"></div>
+
+    <div id="pagination" class="hidden pt-6">
+        <div class="flex justify-center items-center gap-2">
+            <button
+                type="button"
+                data-page="-1"
+                id="prev-btn"
+                class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-sm font-medium border border-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+                <i class="fas fa-chevron-left mr-1" aria-hidden="true"></i> Previous
+            </button>
+            <span id="page-info" class="text-zinc-400 text-sm px-4"></span>
+            <button
+                type="button"
+                data-page="1"
+                id="next-btn"
+                class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-sm font-medium border border-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+                Next <i class="fas fa-chevron-right ml-1" aria-hidden="true"></i>
+            </button>
+        </div>
+    </div>
+
+    <dialog id="detail-dialog" class="w-[calc(100%-2rem)] max-w-2xl max-h-[85vh] m-auto rounded-xl border border-zinc-700 bg-zinc-900 p-0 text-zinc-100 backdrop:bg-black/70 backdrop:backdrop-blur-sm">
+        <div class="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-zinc-800 bg-zinc-900 px-6 py-5">
+            <div class="min-w-0">
+                <p id="detail-kind" class="mb-1 text-xs font-semibold uppercase tracking-wide text-zinc-400"></p>
+                <h2 id="detail-title" class="break-words text-xl font-bold text-white"></h2>
+            </div>
+            <button type="button" id="detail-close" class="shrink-0 rounded-lg border border-zinc-700 px-3 py-2 text-sm text-zinc-200 hover:bg-zinc-800" aria-label="Close submission details">
+                Close
+            </button>
+        </div>
+
+        <div class="space-y-5 px-6 py-5">
+            <p id="detail-description" class="text-sm leading-6 text-zinc-300"></p>
+
+            <dl class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div class="rounded-lg border border-zinc-800 bg-zinc-950/40 p-3">
+                    <dt class="text-xs text-zinc-500">Package</dt>
+                    <dd id="detail-package" class="mt-1 break-all font-mono text-sm text-zinc-200">-</dd>
+                </div>
+                <div class="rounded-lg border border-zinc-800 bg-zinc-950/40 p-3">
+                    <dt class="text-xs text-zinc-500">Submitted</dt>
+                    <dd id="detail-created" class="mt-1 text-sm text-zinc-200">-</dd>
+                </div>
+                <div class="rounded-lg border border-zinc-800 bg-zinc-950/40 p-3">
+                    <dt class="text-xs text-zinc-500">Submitter</dt>
+                    <dd id="detail-submitter" class="mt-1 text-sm text-zinc-200">-</dd>
+                </div>
+                <div class="rounded-lg border border-zinc-800 bg-zinc-950/40 p-3">
+                    <dt class="text-xs text-zinc-500">Votes</dt>
+                    <dd id="detail-votes" class="mt-1 text-sm text-zinc-200">-</dd>
+                </div>
+                <div class="rounded-lg border border-zinc-800 bg-zinc-950/40 p-3 sm:col-span-2">
+                    <dt class="text-xs text-zinc-500">Category / license</dt>
+                    <dd id="detail-category" class="mt-1 text-sm text-zinc-200">-</dd>
+                </div>
+                <div class="rounded-lg border border-zinc-800 bg-zinc-950/40 p-3 sm:col-span-2">
+                    <dt class="text-xs text-zinc-500">Repository</dt>
+                    <dd id="detail-repository" class="mt-1 break-all text-sm text-zinc-200">-</dd>
+                </div>
+                <div class="rounded-lg border border-zinc-800 bg-zinc-950/40 p-3 sm:col-span-2">
+                    <dt class="text-xs text-zinc-500">F-Droid ID / alternatives</dt>
+                    <dd id="detail-alternatives" class="mt-1 break-words text-sm text-zinc-200">-</dd>
+                </div>
+            </dl>
+        </div>
+    </dialog>
+
+    <div id="downvote-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
+        <div class="max-w-md mx-auto mt-24 bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-4">
+            <h3 class="text-lg font-bold text-white">Why are you downvoting?</h3>
+            <p id="dv-target" class="text-sm text-zinc-400"></p>
+
+            <select id="dv-reason" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500">
+                <option value="DUPLICATE">Duplicate</option>
+                <option value="WRONG_CATEGORY">Wrong category</option>
+                <option value="FAKE_SUBMISSION">Fake submission</option>
+                <option value="NOT_ENOUGH_INFO">Not enough information</option>
+                <option value="OTHER">Other</option>
+            </select>
+
+            <div id="dv-category-wrap" class="hidden">
+                <label for="dv-category" class="block text-xs text-zinc-400 mb-1">Correct category</label>
+                <select id="dv-category" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500">
+                    <option value="FOSS">FOSS</option>
+                    <option value="Proprietary">Proprietary</option>
+                    <option value="Source Available">Source Available</option>
+                    <option value="PWA">PWA</option>
+                </select>
+            </div>
+
+            <div id="dv-detail-wrap">
+                <label for="dv-detail" class="block text-xs text-zinc-400 mb-1">Details</label>
+                <textarea
+                    id="dv-detail"
+                    rows="3"
+                    class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-500 resize-y"
+                    placeholder="Add context for the submitter and reviewers..."
+                ></textarea>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" id="dv-cancel" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-sm border border-zinc-700">
+                    Cancel
+                </button>
+                <button type="button" id="dv-confirm" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold">
+                    Submit downvote
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="hidden fixed bottom-4 right-4 z-[60] px-4 py-3 rounded-lg text-white text-sm shadow-lg"></div>
+</div>
+
+<script>
+    import { supabase } from '../lib/supabase';
+    import type {
+        Badge,
+        CommunityItem,
+        CommunityQueue,
+        DownvoteReason,
+        QueueFilter,
+        QueueSort,
+        SourceTable,
+        SubmissionKind,
+        VoteValue
+    } from '../types/submission';
+
+    const PAGE_SIZE = 20;
+
+    const CHIP_BASE = 'px-4 py-1.5 rounded-full text-sm font-medium transition border';
+    const CHIP_ON = `${CHIP_BASE} bg-blue-600 text-white border-blue-500`;
+    const CHIP_OFF = `${CHIP_BASE} bg-zinc-800 text-zinc-400 border-zinc-700 hover:bg-zinc-700 hover:text-white`;
+
+    const KIND_LABEL: Record<string, string> = {
+        NEW_ALTERNATIVE: 'New Alternative',
+        NEW_PROPRIETARY: 'New Proprietary',
+        LINKING: 'Linking'
+    };
+
+    let root: HTMLElement;
+    let items: CommunityItem[] = [];
+    let total = 0;
+    let page = 1;
+    let filter: QueueFilter = 'all';
+    let sort: QueueSort = 'newest';
+    let search = '';
+    let requestId = 0;
+    let busy = false;
+    let downvoteTarget: CommunityItem | null = null;
+
+    const $ = <T extends HTMLElement = HTMLElement>(id: string) =>
+        root?.querySelector<T>(`#${id}`) ?? null;
+
+    const must = <T extends HTMLElement = HTMLElement>(id: string): T => {
+        const element = $<T>(id);
+        if (!element) throw new Error(`Required community element #${id} was not found.`);
+        return element;
+    };
+
+    const show = (id: string) => must(id).classList.remove('hidden');
+    const hide = (id: string) => must(id).classList.add('hidden');
+
+    function esc(value: unknown): string {
+        const div = document.createElement('div');
+        div.textContent = value == null ? '' : String(value);
+        return div.innerHTML;
+    }
+
+    function timeAgo(iso: string): string {
+        const seconds = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+        const units: [number, string][] = [
+            [31536000, 'y'],
+            [2592000, 'mo'],
+            [86400, 'd'],
+            [3600, 'h'],
+            [60, 'm']
+        ];
+        for (const [size, label] of units) {
+            const n = Math.floor(seconds / size);
+            if (n >= 1) return `${n}${label} ago`;
+        }
+        return 'just now';
+    }
+
+    let toastTimer: ReturnType<typeof setTimeout>;
+    function toast(message: string, tone: 'info' | 'success' | 'error' = 'info') {
+        const el = $<HTMLDivElement>('toast');
+        if (!el) return;
+        const bg = { info: 'bg-blue-600', success: 'bg-green-600', error: 'bg-red-600' }[tone];
+        el.className = `fixed bottom-4 right-4 z-[60] px-4 py-3 rounded-lg text-white text-sm shadow-lg ${bg}`;
+        el.textContent = message;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.add('hidden'), 4000);
+    }
+
+    async function ensureSession() {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) return data.session;
+        const { data: anon, error } = await supabase.auth.signInAnonymously();
+        if (error) {
+            toast(error.message, 'error');
+            return null;
+        }
+        return anon.session;
+    }
+
+    async function load() {
+        const ticket = ++requestId;
+
+        show('loading-spinner');
+        hide('submission-list');
+        hide('empty-state');
+        hide('error-state');
+        hide('pagination');
+
+        await ensureSession();
+
+        const { data, error } = await supabase.rpc('get_community_queue', {
+            p_filter: filter,
+            p_search: search,
+            p_sort: sort,
+            p_limit: PAGE_SIZE,
+            p_offset: (page - 1) * PAGE_SIZE
+        });
+
+        if (ticket !== requestId) return;
+
+        hide('loading-spinner');
+
+        if (error) {
+            must<HTMLParagraphElement>('error-message').textContent = error.message;
+            show('error-state');
+            return;
+        }
+
+        const queue = (data ?? { total: 0, items: [] }) as CommunityQueue;
+        items = queue.items ?? [];
+        total = queue.total ?? 0;
+
+        if (items.length === 0) {
+            const [submissionResult, linkingResult] = await Promise.all([
+                supabase
+                    .from('user_submissions')
+                    .select('id, app_name, app_package, description, submission_type, status, last_edited_by, created_at, submitter_id')
+                    .eq('status', 'PENDING'),
+                supabase
+                    .from('user_linking_submissions')
+                    .select('id, proprietary_package, alternatives, status, last_edited_by, created_at, submitter_id')
+                    .eq('status', 'PENDING')
+            ]);
+
+            if (submissionResult.error) throw submissionResult.error;
+            if (linkingResult.error) throw linkingResult.error;
+
+            const fallbackItems: CommunityItem[] = [
+                ...(submissionResult.data ?? []).map((row) => ({
+                    id: row.id,
+                    source_table: 'user_submissions' as SourceTable,
+                    kind: row.submission_type as SubmissionKind,
+                    title: row.app_name,
+                    package_name: row.app_package,
+                    replaces: null,
+                    description: row.description,
+                    submitter_id: row.submitter_id,
+                    last_edited_by: row.last_edited_by,
+                    created_at: row.created_at,
+                    username: 'Guest',
+                    avatar_url: null,
+                    badge: 'Scout' as Badge,
+                    reputation_score: 0,
+                    upvotes: 0,
+                    downvotes: 0,
+                    my_vote: null
+                })),
+                ...(linkingResult.data ?? []).map((row) => ({
+                    id: row.id,
+                    source_table: 'user_linking_submissions' as SourceTable,
+                    kind: 'LINKING' as SubmissionKind,
+                    title: row.proprietary_package,
+                    package_name: row.proprietary_package,
+                    replaces: row.alternatives?.join(', ') || null,
+                    description: null,
+                    submitter_id: row.submitter_id,
+                    last_edited_by: row.last_edited_by,
+                    created_at: row.created_at,
+                    username: 'Guest',
+                    avatar_url: null,
+                    badge: 'Scout' as Badge,
+                    reputation_score: 0,
+                    upvotes: 0,
+                    downvotes: 0,
+                    my_vote: null
+                }))
+            ];
+
+            const query = search.trim().toLowerCase();
+            const filtered = fallbackItems.filter((item) => {
+                if (filter !== 'all' && item.kind !== filter) return false;
+                if (!query) return true;
+                return [item.title, item.package_name, item.description]
+                    .some((value) => value?.toLowerCase().includes(query));
+            });
+
+            filtered.sort((a, b) => {
+                if (sort === 'oldest') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+                if (sort === 'most_upvoted') return b.upvotes - a.upvotes;
+                if (sort === 'most_downvoted') return b.downvotes - a.downvotes;
+                return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+            });
+
+            total = filtered.length;
+            const offset = (page - 1) * PAGE_SIZE;
+            items = filtered.slice(offset, offset + PAGE_SIZE);
+        }
+
+        if (items.length === 0) {
+            show('empty-state');
+            return;
+        }
+
+        renderList();
+        renderPagination();
+        show('submission-list');
+        show('pagination');
+    }
+
+    function renderList() {
+        const container = must<HTMLDivElement>('submission-list');
+
+        container.innerHTML = items.map((item) => {
+            const net = item.upvotes - item.downvotes;
+            const upOn = item.my_vote === 1;
+            const downOn = item.my_vote === -1;
+            const remaining = Math.max(0, 5 - net);
+
+            return `
+                <article data-detail-card="${esc(item.id)}" class="cursor-pointer bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition">
+                    <div class="flex justify-between items-start gap-4">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex flex-wrap items-center gap-2 mb-1">
+                                <span class="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">
+                                    ${esc(KIND_LABEL[item.kind] ?? item.kind)}
+                                </span>
+                                ${item.package_name
+                                    ? `<span class="text-xs text-zinc-500 font-mono truncate">${esc(item.package_name)}</span>`
+                                    : ''}
+                            </div>
+
+                            <h3 class="font-bold text-lg text-white break-words">${esc(item.title)}</h3>
+
+                            <div class="flex flex-wrap items-center gap-2 mt-1 text-sm">
+                                <span class="text-zinc-500">by</span>
+                                <span class="text-zinc-300 font-medium">${esc(item.username ?? 'Guest')}</span>
+                                <span class="text-xs px-2 py-0.5 rounded bg-blue-900/40 text-blue-300 border border-blue-500/30">
+                                    ${esc(item.badge ?? 'Scout')}
+                                </span>
+                                <span class="text-xs text-zinc-500">${esc(item.reputation_score ?? 0)} rep</span>
+                            </div>
+
+                            ${item.description
+                                ? `<p class="mt-3 text-zinc-300 text-sm line-clamp-2">${esc(item.description)}</p>`
+                                : ''}
+
+                            <div class="flex flex-wrap items-center gap-4 mt-3 text-xs text-zinc-500">
+                                <span><i class="far fa-clock mr-1" aria-hidden="true"></i>${esc(timeAgo(item.created_at))}</span>
+                                ${item.last_edited_by
+                                    ? '<span><i class="fas fa-edit mr-1" aria-hidden="true"></i>Community edited</span>'
+                                    : ''}
+                                <span class="${net >= 5 ? 'text-green-400' : 'text-zinc-500'}">
+                                    ${remaining > 0 ? `${remaining} more vote(s) to auto-approve` : 'Approving…'}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col items-center gap-1 shrink-0">
+                            <button
+                                type="button"
+                                data-detail="${esc(item.id)}"
+                                class="mt-3 text-xs font-medium text-zinc-300 underline underline-offset-4 hover:text-white"
+                            >
+                                View full details
+                            </button>
+
+                            <button
+                                type="button"
+                                data-vote="1"
+                                data-id="${esc(item.id)}"
+                                aria-pressed="${upOn}"
+                                aria-label="Upvote"
+                                class="flex flex-col items-center gap-0.5 px-2 py-1 rounded transition ${upOn ? 'text-green-500' : 'text-zinc-400 hover:text-green-500'}"
+                            >
+                                <i class="fas fa-arrow-up text-lg" aria-hidden="true"></i>
+                                <span class="text-sm font-bold">${item.upvotes}</span>
+                            </button>
+
+                            <span class="text-xs font-mono ${net > 0 ? 'text-green-400' : net < 0 ? 'text-red-400' : 'text-zinc-500'}">
+                                ${net > 0 ? '+' : ''}${net}
+                            </span>
+
+                            <button
+                                type="button"
+                                data-vote="-1"
+                                data-id="${esc(item.id)}"
+                                aria-pressed="${downOn}"
+                                aria-label="Downvote"
+                                class="flex flex-col items-center gap-0.5 px-2 py-1 rounded transition ${downOn ? 'text-red-500' : 'text-zinc-400 hover:text-red-500'}"
+                            >
+                                <i class="fas fa-arrow-down text-lg" aria-hidden="true"></i>
+                                <span class="text-sm font-bold">${item.downvotes}</span>
+                            </button>
+                        </div>
+                    </div>
+                </article>
+            `;
+        }).join('');
+    }
+
+    function renderPagination() {
+        const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+        must<HTMLSpanElement>('page-info').textContent = `Page ${page} of ${pages} · ${total} pending`;
+        must<HTMLButtonElement>('prev-btn').disabled = page <= 1;
+        must<HTMLButtonElement>('next-btn').disabled = page >= pages;
+    }
+
+    function renderChips() {
+        root.querySelectorAll<HTMLButtonElement>('[data-filter]').forEach((btn) => {
+            const active = btn.dataset.filter === filter;
+            btn.className = active ? CHIP_ON : CHIP_OFF;
+            btn.setAttribute('aria-pressed', String(active));
+        });
+    }
+
+    async function syncApprovalStatus(item: CommunityItem) {
+        const { data: votes, error: votesError } = await supabase
+            .from('submission_votes')
+            .select('vote')
+            .match({
+                submission_id: item.id,
+                submission_table: item.source_table
+            });
+        if (votesError) throw votesError;
+
+        const netVotes = (votes ?? []).reduce(
+            (net, vote) => net + (Number(vote.vote) === 1 ? 1 : -1),
+            0
+        );
+
+        const { data: submission, error: submissionError } = await supabase
+            .from(item.source_table)
+            .select('status')
+            .eq('id', item.id)
+            .maybeSingle();
+        if (submissionError) throw submissionError;
+
+        const nextStatus = netVotes >= 5
+            ? 'APPROVED'
+            : submission?.status === 'APPROVED'
+                ? 'PENDING'
+                : submission?.status;
+
+        if (nextStatus && nextStatus !== submission?.status) {
+            const { data: updated, error: statusError } = await supabase
+                .from(item.source_table)
+                .update({ status: nextStatus })
+                .eq('id', item.id)
+                .select('status')
+                .maybeSingle();
+            if (statusError) throw statusError;
+            if (!updated) {
+                throw new Error('Approval update was blocked by database permissions (RLS).');
+            }
+        }
+
+        return netVotes;
+    }
+
+    async function castVote(
+        item: CommunityItem,
+        value: VoteValue,
+        reason: DownvoteReason | null,
+        detail: string | null
+    ) {
+        if (busy) return;
+        busy = true;
+
+        try {
+            const session = await ensureSession();
+            if (!session) return;
+
+            const key = {
+                submission_id: item.id,
+                submission_table: item.source_table as SourceTable,
+                user_id: session.user.id
+            };
+
+            const { data: existing, error: readError } = await supabase
+                .from('submission_votes')
+                .select('vote')
+                .match(key)
+                .maybeSingle();
+
+            if (readError) throw readError;
+
+            const existingVote = existing ? Number(existing.vote) as VoteValue : null;
+
+            if (existingVote === value) {
+                const { error } = await supabase
+                    .from('submission_votes')
+                    .delete()
+                    .match(key);
+                if (error) throw error;
+            } else {
+                const { error } = await supabase
+                    .from('submission_votes')
+                    .upsert(
+                        { ...key, vote: value, reason, reason_detail: detail },
+                        { onConflict: 'submission_id,submission_table,user_id' }
+                    );
+                if (error) throw error;
+            }
+
+            const netVotes = await syncApprovalStatus(item);
+
+            if (netVotes >= 5) {
+                toast('Threshold reached. Submission approved.', 'success');
+            } else if (existingVote === value) {
+                toast('Vote removed.', 'info');
+            } else if (existingVote !== null) {
+                toast(value === 1 ? 'Changed to upvote.' : 'Changed to downvote.', 'success');
+            } else {
+                toast(value === 1 ? 'Upvoted.' : 'Downvoted.', 'success');
+            }
+
+            await load();
+        } catch (e) {
+            toast(e instanceof Error ? e.message : String(e), 'error');
+        } finally {
+            busy = false;
+        }
+    }
+
+    function renderRepository(value: unknown) {
+        const element = must<HTMLElement>('detail-repository');
+        element.replaceChildren();
+
+        const url = typeof value === 'string' ? value.trim() : '';
+        if (!url) {
+            element.textContent = '-';
+            return;
+        }
+
+        try {
+            const parsed = new URL(url);
+            if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') throw new Error('Unsupported protocol');
+
+            const link = document.createElement('a');
+            link.href = parsed.href;
+            link.textContent = url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.className = 'underline underline-offset-4 hover:text-white break-all';
+            element.append(link);
+        } catch {
+            element.textContent = url;
+        }
+    }
+
+    async function openDetails(item: CommunityItem) {
+        must<HTMLParagraphElement>('detail-kind').textContent = KIND_LABEL[item.kind] ?? item.kind;
+        must<HTMLHeadingElement>('detail-title').textContent = item.title;
+        must<HTMLParagraphElement>('detail-description').textContent = item.description || 'No description provided.';
+        must<HTMLElement>('detail-package').textContent = item.package_name || '-';
+        must<HTMLElement>('detail-created').textContent = new Date(item.created_at).toLocaleString();
+        must<HTMLElement>('detail-submitter').textContent = item.username || 'Guest';
+        must<HTMLElement>('detail-votes').textContent = `${item.upvotes} upvotes · ${item.downvotes} downvotes · net ${item.upvotes - item.downvotes}`;
+        must<HTMLElement>('detail-category').textContent = item.replaces || '-';
+        renderRepository(null);
+        must<HTMLElement>('detail-alternatives').textContent = item.replaces || '-';
+
+        const dialog = must<HTMLDialogElement>('detail-dialog');
+        if (!dialog.open) dialog.showModal();
+
+        try {
+            const { data, error } = await supabase
+                .from(item.source_table)
+                .select('*')
+                .eq('id', item.id)
+                .maybeSingle();
+            if (error) throw error;
+            if (!data) return;
+
+            must<HTMLElement>('detail-description').textContent = data.description || item.description || 'No description provided.';
+            must<HTMLElement>('detail-package').textContent = data.app_package || data.proprietary_package || item.package_name || '-';
+            must<HTMLElement>('detail-category').textContent = [data.category, data.license].filter(Boolean).join(' · ') || '-';
+            renderRepository(data.repo_url);
+
+            const alternatives = Array.isArray(data.alternatives)
+                ? data.alternatives.join(', ')
+                : '-';
+            must<HTMLElement>('detail-alternatives').textContent = [data.fdroid_id, alternatives].filter((value) => value && value !== '-').join(' · ') || '-';
+        } catch (e) {
+            toast(e instanceof Error ? e.message : 'Could not load full submission details.', 'error');
+        }
+    }
+
+    function openDownvote(item: CommunityItem) {
+        downvoteTarget = item;
+        must<HTMLParagraphElement>('dv-target').textContent = item.title;
+        must<HTMLSelectElement>('dv-reason').value = 'DUPLICATE';
+        must<HTMLTextAreaElement>('dv-detail').value = '';
+        syncReasonFields();
+        show('downvote-modal');
+    }
+
+    function closeDownvote() {
+        downvoteTarget = null;
+        hide('downvote-modal');
+    }
+
+    function syncReasonFields() {
+        const reason = must<HTMLSelectElement>('dv-reason').value as DownvoteReason;
+        const needsCategory = reason === 'WRONG_CATEGORY';
+        const needsDetail = reason === 'DUPLICATE' || reason === 'OTHER';
+
+        must<HTMLDivElement>('dv-category-wrap').classList.toggle('hidden', !needsCategory);
+        must<HTMLDivElement>('dv-detail-wrap').classList.toggle('hidden', !needsDetail && !needsCategory);
+    }
+
+    async function confirmDownvote() {
+        if (!downvoteTarget) return;
+
+        const reason = must<HTMLSelectElement>('dv-reason').value as DownvoteReason;
+        const raw = must<HTMLTextAreaElement>('dv-detail').value.trim();
+        const category = must<HTMLSelectElement>('dv-category').value;
+
+        let detail: string | null = raw || null;
+        if (reason === 'WRONG_CATEGORY') {
+            detail = raw ? `Correct category: ${category} — ${raw}` : `Correct category: ${category}`;
+        }
+        if ((reason === 'DUPLICATE' || reason === 'OTHER') && !raw) {
+            toast('Please add a short explanation.', 'error');
+            return;
+        }
+
+        const item = downvoteTarget;
+        closeDownvote();
+        await castVote(item, -1, reason, detail);
+    }
+
+    function init() {
+        root = document.getElementById('community-container') as HTMLElement;
+        if (!root || root.dataset.bound === '1') return;
+        root.dataset.bound = '1';
+
+        renderChips();
+
+        const sortSelect = must<HTMLSelectElement>('sort-select');
+        sortSelect.value = 'newest';
+        sort = 'newest';
+
+        let debounce: ReturnType<typeof setTimeout>;
+        must<HTMLInputElement>('search-input').addEventListener('input', (e) => {
+            clearTimeout(debounce);
+            const value = (e.target as HTMLInputElement).value.trim();
+            debounce = setTimeout(() => {
+                search = value;
+                page = 1;
+                load();
+            }, 300);
+        });
+
+        must<HTMLSelectElement>('sort-select').addEventListener('change', (e) => {
+            sort = (e.target as HTMLSelectElement).value as QueueSort;
+            page = 1;
+            load();
+        });
+
+        must<HTMLSelectElement>('dv-reason').addEventListener('change', syncReasonFields);
+        must<HTMLButtonElement>('dv-cancel').addEventListener('click', closeDownvote);
+        must<HTMLButtonElement>('dv-confirm').addEventListener('click', confirmDownvote);
+        must<HTMLButtonElement>('detail-close').addEventListener('click', () => {
+            must<HTMLDialogElement>('detail-dialog').close();
+        });
+
+        must<HTMLDialogElement>('detail-dialog').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                must<HTMLDialogElement>('detail-dialog').close();
+            }
+        });
+
+        root.addEventListener('click', (e) => {
+            const target = e.target as HTMLElement;
+
+            const chip = target.closest<HTMLButtonElement>('[data-filter]');
+            if (chip) {
+                filter = chip.dataset.filter as QueueFilter;
+                page = 1;
+                renderChips();
+                load();
+                return;
+            }
+
+            const pager = target.closest<HTMLButtonElement>('[data-page]');
+            if (pager && !pager.disabled) {
+                page += Number(pager.dataset.page);
+                load();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+
+            if (target.closest('[data-retry]')) {
+                load();
+                return;
+            }
+
+            const detailBtn = target.closest<HTMLButtonElement>('[data-detail]');
+            if (detailBtn) {
+                const item = items.find((i) => i.id === detailBtn.dataset.detail);
+                if (item) openDetails(item);
+                return;
+            }
+
+            const detailCard = target.closest<HTMLElement>('[data-detail-card]');
+            if (detailCard && !target.closest('[data-vote]')) {
+                const item = items.find((i) => i.id === detailCard.dataset.detailCard);
+                if (item) openDetails(item);
+                return;
+            }
+
+            const voteBtn = target.closest<HTMLButtonElement>('[data-vote]');
+            if (voteBtn) {
+                const item = items.find((i) => i.id === voteBtn.dataset.id);
+                if (!item) return;
+                const value = Number(voteBtn.dataset.vote) as VoteValue;
+                if (value === -1 && item.my_vote !== -1) {
+                    openDownvote(item);
+                } else {
+                    castVote(item, value, null, null);
+                }
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && downvoteTarget) closeDownvote();
+        });
+
+        load();
+    }
+
+    init();
+    document.addEventListener('astro:page-load', init);
+</script>

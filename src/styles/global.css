@@ -1,0 +1,147 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  --bg-canvas: #121212;
+  --bg-surface: #1e1e1e;
+  --bg-subtle: #2a2a2a;
+  --border-default: #3f3f3f;
+  --border-strong: #a3a3a3;
+  --text-muted: #a3a3a3;
+  --text-body: #e5e5e5;
+  --text-primary: #ffffff;
+  --btn-primary-bg: #ffffff;
+  --btn-primary-text: #0d0d0d;
+}
+
+html,
+body {
+  background: var(--bg-canvas);
+  color: var(--text-body);
+}
+
+::selection {
+  background: var(--text-primary);
+  color: var(--bg-canvas);
+}
+
+:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 3px;
+}
+
+body img,
+body video,
+body svg {
+  filter: grayscale(100%);
+}
+
+
+.bg-zinc-950,
+.bg-zinc-900,
+.bg-zinc-900\/80 {
+  background-color: var(--bg-canvas) !important;
+}
+
+.bg-zinc-800,
+.bg-zinc-800\/30,
+.bg-zinc-700 {
+  background-color: var(--bg-subtle) !important;
+}
+
+.border-zinc-800,
+.border-zinc-700,
+.border-zinc-600,
+.border-zinc-500 {
+  border-color: var(--border-default) !important;
+}
+
+.text-zinc-100,
+.text-zinc-200,
+.text-zinc-300,
+.text-white {
+  color: var(--text-primary) !important;
+}
+
+.text-zinc-400,
+.text-zinc-500,
+.text-zinc-600 {
+  color: var(--text-muted) !important;
+}
+
+.bg-blue-600,
+.bg-blue-700,
+.bg-blue-900\/40,
+.hover\:bg-blue-700:hover,
+.hover\:bg-blue-500:hover {
+  background-color: var(--btn-primary-bg) !important;
+  color: var(--btn-primary-text) !important;
+}
+
+.text-blue-200,
+.text-blue-400,
+.text-blue-500,
+.hover\:text-blue-300:hover {
+  color: var(--text-primary) !important;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.border-blue-500,
+.border-blue-500\/30 {
+  border-color: var(--text-primary) !important;
+}
+
+.form-input {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid var(--border-default);
+  border-radius: 0.5rem;
+  background-color: var(--bg-subtle);
+  padding: 0.625rem 0.875rem;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.form-input::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+.form-input:focus {
+  border-color: var(--border-strong);
+  box-shadow: 0 0 0 3px rgb(255 255 255 / 25%);
+}
+
+.form-input:disabled,
+button:disabled {
+  cursor: not-allowed;
+  border-style: dashed;
+  opacity: 0.5;
+}
+
+textarea.form-input {
+  min-height: 5.5rem;
+}
+
+select.form-input {
+  appearance: auto;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-canvas);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}

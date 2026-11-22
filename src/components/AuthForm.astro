@@ -1,0 +1,117 @@
+---
+---
+
+<div class="bg-zinc-900 p-8 rounded-2xl border border-zinc-800 w-full max-w-md mx-auto">
+  <h2 class="text-2xl font-bold mb-1 text-white">Welcome</h2>
+  <p class="text-zinc-400 mb-6">Sign in to submit or vote on apps.</p>
+  
+  <div class="space-y-4">
+    <input id="auth-email" type="email" placeholder="Email" class="w-full bg-zinc-950 border border-zinc-700 rounded px-4 py-2 text-white focus:border-blue-500 outline-none" />
+    <input id="auth-password" type="password" placeholder="Password" class="w-full bg-zinc-950 border border-zinc-700 rounded px-4 py-2 text-white focus:border-blue-500 outline-none" />
+    
+    <div class="flex items-center gap-3">
+      <label class="flex items-center gap-2 text-sm text-zinc-300">
+        <input id="remember-me" type="checkbox" class="h-4 w-4 rounded border-zinc-700 bg-zinc-950" />
+        Remember me
+      </label>
+      <button id="auth-btn" class="ml-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition">Sign In</button>
+    </div>
+
+    <div class="relative flex py-2 items-center">
+      <div class="flex-grow border-t border-zinc-700"></div>
+      <span class="flex-shrink mx-4 text-xs text-zinc-500 uppercase">or</span>
+      <div class="flex-grow border-t border-zinc-700"></div>
+    </div>
+
+    <button id="github-btn" class="w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg font-semibold border border-zinc-700 flex items-center justify-center gap-2 transition">
+      <i class="fab fa-github text-lg"></i> Continue with GitHub
+    </button>
+    
+    <button id="guest-btn" class="w-full py-3 text-zinc-400 hover:text-white text-sm font-medium transition">
+      Continue as Guest
+    </button>
+
+    <p class="text-center text-sm mt-4">
+      <button id="toggle-register" type="button" class="text-blue-400 hover:text-blue-300">Need an account? Register</button>
+    </p>
+    <p class="text-center text-sm mt-2">
+      <button id="forgot-password" type="button" class="text-zinc-400 hover:text-zinc-200">Forgot password?</button>
+    </p>
+  </div>
+</div>
+
+<script>
+    import { supabase } from '../lib/supabase';
+
+    let isRegistering = false;
+    const $ = (id: string) => document.getElementById(id);
+
+    async function handleAuth() {
+        const email = ($('auth-email') as HTMLInputElement)?.value.trim();
+        const password = ($('auth-password') as HTMLInputElement)?.value;
+        if (!email || !password) return alert("Please enter email and password");
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return alert("Please enter a valid email address");
+        if (isRegistering && password.length < 6) return alert("Password must be at least 6 characters");
+
+        const submitButton = $('auth-btn') as HTMLButtonElement;
+        submitButton.disabled = true;
+        submitButton.textContent = isRegistering ? "Registering..." : "Signing in...";
+
+        try {
+            const { error } = isRegistering
+                ? await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: { emailRedirectTo: window.location.origin + '/submit' },
+                })
+                : await supabase.auth.signInWithPassword({ email, password });
+
+            if (error) throw error;
+            if (isRegistering) {
+                alert("Account created. Check your email to verify it.");
+            } else {
+                window.location.reload();
+            }
+        } catch (e: any) {
+            alert(e.message);
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = isRegistering ? "Register" : "Sign In";
+        }
+    }
+
+    async function signInAnonymously() {
+        const { error } = await supabase.auth.signInAnonymously();
+        if (error) return alert(error.message);
+        window.location.reload();
+    }
+
+    async function loginWithGithub() {
+        await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: { redirectTo: window.location.origin + '/submit' }
+        });
+    }
+
+    async function resetPassword() {
+        const email = ($('auth-email') as HTMLInputElement)?.value.trim();
+        if (!email) return alert("Enter your email first");
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.origin + '/submit',
+        });
+        if (error) return alert(error.message);
+        alert("Password reset email sent");
+    }
+
+    // Event Listeners
+    $('auth-btn')?.addEventListener('click', handleAuth);
+    $('github-btn')?.addEventListener('click', loginWithGithub);
+    $('guest-btn')?.addEventListener('click', signInAnonymously);
+    $('forgot-password')?.addEventListener('click', resetPassword);
+    
+    $('toggle-register')?.addEventListener('click', () => {
+        isRegistering = !isRegistering;
+        $('auth-btn')!.textContent = isRegistering ? "Register" : "Sign In";
+        $('toggle-register')!.textContent = isRegistering ? "Already have an account? Sign in" : "Need an account? Register";
+    });
+</script>

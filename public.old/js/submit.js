@@ -107,19 +107,6 @@
         initSupabaseClient();
     }
 
-    // Initialize client on load 
-    (async () => {
-        try {
-            await waitForSupabaseSdk();
-            initSupabaseClient();
-        } catch (e) {
-            console.error(e);
-            if (typeof showToast === "function") {
-                showToast(e?.message || "App failed to load. Please refresh.", "error");
-            }
-        }
-    })();
-
     // ── State ──────────────────────────────────────────────────────────────────
     let currentUser = null;
     let currentTab = "foss";

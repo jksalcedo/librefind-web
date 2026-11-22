@@ -1,0 +1,23 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout>
+  <div class="max-w-4xl mx-auto text-center py-20">
+    <h1 class="text-5xl font-bold mb-6">Help people escape Big Tech.</h1>
+    <p class="text-xl text-zinc-400 mb-8">
+      LibreFind collects FOSS alternatives to proprietary apps. 
+      This portal is for contributors to submit new apps, add proprietary targets, and link solutions.
+    </p>
+    <div class="flex justify-center gap-4">
+      <a href="/submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition">
+        Open Submission Portal
+      </a>
+      <a href="/community" class="bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-3 rounded-lg font-medium transition">
+        View Community Queue
+      </a>
+    </div>
+    
+    <div id="impact-stats" class="mt-16 hidden"></div>
+  </div>
+</Layout>

@@ -1,0 +1,83 @@
+---
+import '../styles/global.css';
+
+const title = "LibreFind";
+const description = "LibreFind helps people escape Big Tech by collecting FOSS alternatives.";
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    
+    <style>
+
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #18181b; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #3f3f46; 
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #52525b; 
+      }
+    </style>
+    
+    <title>{title}</title>
+  </head>
+  <body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col font-sans antialiased selection:bg-blue-500/30">
+    
+
+    <header class="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md sticky top-0 z-50">
+      <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2 group"> 
+          <img src="/icon.png" alt="LibreFind Logo" class="w-8 h-8" />
+          <span class="font-bold text-xl tracking-tight">LibreFind</span>
+        </a>
+
+        <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+          <a href="/submit" class="hover:text-white transition">Submit</a>
+          <a href="/community" class="hover:text-white transition">Community</a>
+          <a href="https://github.com/jksalcedo/librefind" target="_blank" class="hover:text-white transition">GitHub</a>
+          <a href="https://github.com/jksalcedo/librefind/wiki/How-to-Contribute" target="_blank" class="hover:text-white transition">Guide</a>
+        </nav>
+
+
+        <button class="md:hidden text-zinc-400 hover:text-white">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </header>
+
+
+    <main class="flex-grow">
+      <slot />
+    </main>
+
+
+    <footer class="border-t border-zinc-800 py-8 mt-auto">
+      <div class="max-w-6xl mx-auto px-4 text-center text-zinc-500 text-sm">
+        <p>© {new Date().getFullYear()} LibreFind. Helping users reclaim digital sovereignty.</p>
+        <div class="mt-2 flex justify-center gap-4">
+          <a href="/privacy" class="hover:text-zinc-300">Privacy</a>
+          <a href="/terms" class="hover:text-zinc-300">Terms</a>
+        </div>
+      </div>
+    </footer>
+
+
+    <script>
+      import '../lib/auth-context';
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+  </body>
+</html>
